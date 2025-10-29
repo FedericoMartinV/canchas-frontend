@@ -1,0 +1,62 @@
+export const theme = {
+  colors: {
+    primary: {
+      50: "#f0fdf4",
+      100: "#dcfce7",
+      200: "#bbf7d0",
+      300: "#86efac",
+      400: "#4ade80",
+      500: "#22c55e",
+      600: "#16a34a",
+      700: "#15803d",
+      800: "#166534",
+      900: "#14532d",
+    },
+    secondary: {
+      50: "#ecfdf5",
+      100: "#d1fae5",
+      200: "#a7f3d0",
+      300: "#6ee7b7",
+      400: "#34d399",
+      500: "#10b981",
+      600: "#059669",
+      700: "#047857",
+      800: "#065f46",
+      900: "#064e3b",
+    },
+  },
+  spacing: {
+    xs: "0.25rem",
+    sm: "0.5rem",
+    md: "1rem",
+    lg: "1.5rem",
+    xl: "2rem",
+    "2xl": "3rem",
+    "3xl": "4rem",
+  },
+  borderRadius: {
+    sm: "0.375rem",
+    md: "0.5rem",
+    lg: "0.75rem",
+    xl: "1rem",
+    "2xl": "1.5rem",
+    "3xl": "2rem",
+    full: "9999px",
+  },
+  shadows: {
+    sm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+    md: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+    lg: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+    xl: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+    "2xl": "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+  },
+  breakpoints: {
+    sm: "640px",
+    md: "768px",
+    lg: "1024px",
+    xl: "1280px",
+    "2xl": "1536px",
+  },
+};
+
+export default theme;
