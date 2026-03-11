@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, Mail, Phone, UserPlus, ArrowLeft } from 'lucide-react';
+import { User, Mail, Phone, UserPlus, ArrowLeft, Lock, Eye, EyeOff } from 'lucide-react';
 import { authAPI } from '../../services/api';
 
 export default function Register({ setView, agregarNotificacion }) {
@@ -7,9 +7,11 @@ export default function Register({ setView, agregarNotificacion }) {
     nombre: '',
     apellido: '',
     email: '',
-    telefono: ''
+    telefono: '',
+    password: '' // NUEVO
   });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -93,6 +95,30 @@ export default function Register({ setView, agregarNotificacion }) {
                 onChange={(e) => setFormData({...formData, telefono: e.target.value})}
                 className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all"
               />
+            </div>
+          </div>
+
+          {/* NUEVO CAMPO PASSWORD */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">Contraseña</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Mínimo 6 caracteres"
+                required
+                minLength={6}
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className="w-full pl-12 pr-12 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 

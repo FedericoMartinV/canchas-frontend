@@ -10,7 +10,7 @@ const api = axios.create({
 });
 
 export const authAPI = {
-  login: (email) => api.post("/auth/login", { email }),
+  login: (email, password) => api.post("/auth/login", { email, password }),
   register: (userData) => api.post("/auth/register", userData),
 };
 
@@ -40,6 +40,15 @@ export const reservasAPI = {
   cancelar: (id) => api.patch(`/reservas/${id}/cancelar`),
   getByUsuario: (usuarioId) => api.get(`/reservas/usuario/${usuarioId}`),
   getByCancha: (canchaId) => api.get(`/reservas/cancha/${canchaId}`),
+};
+
+export const estadisticasAPI = {
+  getGenerales: () => api.get("/estadisticas/generales"),
+  getDelMes: (mes, anio) =>
+    api.get("/estadisticas/mes", { params: { mes, anio } }),
+  getPorCancha: () => api.get("/estadisticas/por-cancha"),
+  getPorCanchaDelMes: (mes, anio) =>
+    api.get("/estadisticas/por-cancha/mes", { params: { mes, anio } }),
 };
 
 export default api;

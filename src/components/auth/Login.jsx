@@ -1,30 +1,34 @@
 import React, { useState } from 'react';
-import { Mail, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { authAPI } from '../../services/api';
 
 export default function Login({ setUser, setView, agregarNotificacion }) {
-  const [email, setEmail] = useState('');
+  const [formData, setFormData] = useState({
+    email: '',
+    password: ''
+  });
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await authAPI.login(email);
+      const res = await authAPI.login(formData.email, formData.password);
       setUser(res.data);
       agregarNotificacion(`¡Bienvenido ${res.data.nombre}! 🎉`, 'success');
     } catch (error) {
-      agregarNotificacion('Usuario no encontrado. Verifica el email.', 'error');
+      agregarNotificacion('Email o contraseña incorrectos', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const loginRapido = async (emailPrueba) => {
-    setEmail(emailPrueba);
+  const loginRapido = async (email, password) => {
+    setFormData({ email, password });
     setLoading(true);
     try {
-      const res = await authAPI.login(emailPrueba);
+      const res = await authAPI.login(email, password);
       setUser(res.data);
       agregarNotificacion(`¡Bienvenido ${res.data.nombre}! 🎉`, 'success');
     } catch (error) {
@@ -60,10 +64,34 @@ export default function Login({ setUser, setView, agregarNotificacion }) {
                 type="email"
                 placeholder="tu@email.com"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all"
               />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Contraseña
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                required
+                value={formData.password}
+                onChange={(e) => setFormData({...formData, password: e.target.value})}
+                className="w-full pl-12 pr-12 py-4 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 transition-all"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
           </div>
 
@@ -100,14 +128,14 @@ export default function Login({ setUser, setView, agregarNotificacion }) {
         <div className="space-y-3">
           <p className="text-center text-sm font-semibold text-gray-700 mb-3">Acceso rápido de prueba:</p>
           <button
-            onClick={() => loginRapido('admin@canchas.com')}
+            onClick={() => loginRapido('admin@canchas.com', 'admin123')}
             disabled={loading}
             className="w-full bg-gradient-to-r from-purple-100 to-purple-50 border-2 border-purple-300 text-purple-800 px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50"
           >
             🛡️ Entrar como Administrador
           </button>
           <button
-            onClick={() => loginRapido('carlos@example.com')}
+            onClick={() => loginRapido('federico@example.com', 'fede123')}
             disabled={loading}
             className="w-full bg-gradient-to-r from-blue-100 to-blue-50 border-2 border-blue-300 text-blue-800 px-4 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50"
           >
@@ -125,13 +153,6 @@ export default function Login({ setUser, setView, agregarNotificacion }) {
             Regístrate aquí
             <ArrowRight size={18} />
           </button>
-        </div>
-
-        {/* Info adicional */}
-        <div className="mt-6 p-4 bg-green-50 rounded-xl border-2 border-green-200">
-          <p className="text-xs text-center text-gray-700">
-            💡 <span className="font-semibold">Tip:</span> Usa los botones de acceso rápido para probar la app sin registro
-          </p>
         </div>
       </div>
     </div>
