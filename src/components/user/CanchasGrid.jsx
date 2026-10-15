@@ -1,5 +1,7 @@
 import React from 'react';
 import { MapPin, DollarSign, Users } from 'lucide-react';
+// Capacidad compartida con CanchasList (admin) — fuente única en src/constants/canchas.js
+import { getCapacidadLabel } from '../../constants/canchas';
 
 export default function CanchasGrid({ canchas, onReservar }) {
   if (canchas.length === 0) {
@@ -38,8 +40,8 @@ export default function CanchasGrid({ canchas, onReservar }) {
                 Capacidad:
               </span>
               <span className="font-semibold text-gray-800">
-                {cancha.tipo === 'Futbol 5' ? '10 jugadores' : 
-                 cancha.tipo === 'Futbol 7' ? '14 jugadores' : '22 jugadores'}
+                {/* getCapacidadLabel garantiza el mismo texto que antes */}
+                {getCapacidadLabel(cancha.tipo)}
               </span>
             </div>
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import { MapPin, DollarSign, Trash2, Users } from 'lucide-react';
 import { canchasAPI } from '../../services/api';
+// Capacidad compartida con CanchasGrid (user) — fuente única en src/constants/canchas.js
+import { getCapacidadLabel } from '../../constants/canchas';
 
 export default function CanchasList({ canchas, onCanchaEliminada, agregarNotificacion }) {
   const eliminarCancha = async (id, nombre) => {
@@ -49,8 +51,8 @@ export default function CanchasList({ canchas, onCanchaEliminada, agregarNotific
                 Capacidad:
               </span>
               <span className="font-semibold text-gray-800">
-                {cancha.tipo === 'Futbol 5' ? '10 jugadores' : 
-                 cancha.tipo === 'Futbol 7' ? '14 jugadores' : '22 jugadores'}
+                {/* getCapacidadLabel garantiza el mismo texto que antes */}
+                {getCapacidadLabel(cancha.tipo)}
               </span>
             </div>
 
