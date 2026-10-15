@@ -1,5 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, MapPin, AlertTriangle } from 'lucide-react';
+// Color y emoji de estado compartidos con ReservasList (admin) — fuente unica en src/constants/reservas.js
+import { getEstadoColor, getEstadoEmoji } from '../../constants/reservas';
 
 /**
  * Determina si una reserva tiene los datos anidados mínimos para renderizarse
@@ -11,25 +13,6 @@ import { Calendar, Clock, MapPin, AlertTriangle } from 'lucide-react';
 const esReservaIncompleta = (reserva) => !reserva.cancha;
 
 export default function MisReservas({ reservas }) {
-  const getEstadoColor = (estado) => {
-    switch (estado) {
-      case 'CONFIRMADA':
-        return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300';
-      case 'CANCELADA':
-        return 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-300';
-      default:
-        return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-300';
-    }
-  };
-
-  const getEstadoEmoji = (estado) => {
-    switch (estado) {
-      case 'CONFIRMADA': return '✅';
-      case 'CANCELADA': return '❌';
-      default: return '⏳';
-    }
-  };
-
   if (reservas.length === 0) {
     return (
       <div className="card text-center py-16">
