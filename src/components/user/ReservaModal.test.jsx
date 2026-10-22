@@ -11,6 +11,8 @@
  *  (c) Con horarios válidos → el submit llama a reservasAPI.create con
  *      exactamente los mismos campos de siempre (usuarioId, canchaId, fecha,
  *      horaInicio, horaFin), sin campos extra.
+ *  (d) Si el backend rechaza la reserva → se muestra el motivo que manda
+ *      el backend (o el mensaje genérico si no manda ninguno).
  */
 
 import React from 'react';
@@ -82,8 +84,8 @@ function fechaFutura() {
   const manana = new Date();
   manana.setDate(manana.getDate() + 1);
   const anio = manana.getFullYear();
-  const mes  = String(manana.getMonth() + 1).padStart(2, '0'); // getMonth() es 0-indexed
-  const dia  = String(manana.getDate()).padStart(2, '0');
+  const mes = String(manana.getMonth() + 1).padStart(2, '0'); // getMonth() es 0-indexed
+  const dia = String(manana.getDate()).padStart(2, '0');
   return `${anio}-${mes}-${dia}`;
 }
 
@@ -103,13 +105,13 @@ function completarFormulario({ fecha = fechaFutura(), horaInicio, horaFin } = {}
 
   // Obtenemos los inputs por el atributo type (orden de aparición en el DOM)
   const allInputs = document.querySelectorAll('input');
-  const inputDate   = allInputs[0]; // type="date"
+  const inputDate = allInputs[0]; // type="date"
   const inputInicio = allInputs[1]; // type="time" → horaInicio
-  const inputFin    = allInputs[2]; // type="time" → horaFin
+  const inputFin = allInputs[2]; // type="time" → horaFin
 
-  fireEvent.change(inputDate,   { target: { value: fecha } });
+  fireEvent.change(inputDate, { target: { value: fecha } });
   fireEvent.change(inputInicio, { target: { value: horaInicio } });
-  fireEvent.change(inputFin,    { target: { value: horaFin } });
+  fireEvent.change(inputFin, { target: { value: horaFin } });
 
   return screen.getByRole('button', { name: /Confirmar Reserva/i });
 }
@@ -216,7 +218,7 @@ describe('ReservaModal', () => {
        * pantalla. Ese regex también coincide con "$1200/hora" del card de la
        * cancha, así que habría pasado aunque el total estuviera MAL calculado.
        *
-       * Ahora ancamos la búsqueda: encontramos el elemento que dice
+       * Ahora anclamos la búsqueda: encontramos el elemento que dice
        * "Precio total" y luego verificamos el texto del nodo hermano
        * que contiene el valor numérico dentro del mismo contenedor flex.
        *
@@ -304,6 +306,59 @@ describe('ReservaModal', () => {
           'success'
         );
       });
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // (d) El backend rechaza la reserva → se muestra el motivo que manda el back
+  // --------------------------------------------------------------------------
+
+  describe('(d) cuando el backend rechaza la reserva', () => {
+    it('muestra el mensaje que manda el backend en la notificación', async () => {
+      const mensajeBackend =
+        'La cancha ya tiene una reserva activa que se solapa con el horario solicitado (10:30 - 11:30)';
+
+      // Simulamos la forma real del error de axios con un 400 del backend:
+      // el cuerpo de la respuesta queda en error.response.data
+      reservasAPI.create.mockRejectedValueOnce({
+        response: { status: 400, data: { mensaje: mensajeBackend } },
+      });
+
+      const btnSubmit = completarFormulario({ horaInicio: '10:30', horaFin: '11:30' });
+      fireEvent.click(btnSubmit);
+
+      await waitFor(() => {
+        expect(defaultProps.agregarNotificacion).toHaveBeenCalledWith(mensajeBackend, 'error');
+      });
+    });
+
+    it('usa el mensaje genérico si el error no trae mensaje del backend', async () => {
+      // Error sin response (por ejemplo, backend caído o falla de red)
+      reservasAPI.create.mockRejectedValueOnce(new Error('Network Error'));
+
+      const btnSubmit = completarFormulario({ horaInicio: '10:30', horaFin: '11:30' });
+      fireEvent.click(btnSubmit);
+
+      await waitFor(() => {
+        expect(defaultProps.agregarNotificacion).toHaveBeenCalledWith(
+          'Error al crear la reserva',
+          'error'
+        );
+      });
+    });
+
+    it('no llama a onReservaCreada cuando el backend rechaza la reserva', async () => {
+      reservasAPI.create.mockRejectedValueOnce({
+        response: { status: 400, data: { mensaje: 'Horario ocupado' } },
+      });
+
+      const btnSubmit = completarFormulario({ horaInicio: '10:30', horaFin: '11:30' });
+      fireEvent.click(btnSubmit);
+
+      await waitFor(() => {
+        expect(defaultProps.agregarNotificacion).toHaveBeenCalled();
+      });
+      expect(defaultProps.onReservaCreada).not.toHaveBeenCalled();
     });
   });
 });

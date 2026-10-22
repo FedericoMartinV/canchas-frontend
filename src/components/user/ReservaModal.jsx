@@ -71,6 +71,26 @@ function validarCoherenciaHoras(horaInicio, horaFin) {
   return null; // Sin error
 }
 
+/**
+ * Extrae el motivo del rechazo que manda el backend.
+ *
+ * Cuando el backend responde con error (ej. 400 por horario ocupado), axios
+ * deja el cuerpo de la respuesta en error.response.data. Hoy el backend manda
+ * un JSON con el campo "mensaje" (ej. "La cancha ya tiene una reserva activa
+ * que se solapa con el horario solicitado (10:30 - 11:30)").
+ *
+ * Usamos optional chaining (?.) porque en otros fallos (backend caído, error
+ * de red, otro formato de error) no existe error.response o no trae "mensaje";
+ * en ese caso devolvemos el texto genérico de siempre.
+ */
+function obtenerMensajeError(error) {
+  const mensaje = error?.response?.data?.mensaje;
+  if (typeof mensaje === 'string' && mensaje.trim() !== '') {
+    return mensaje;
+  }
+  return 'Error al crear la reserva';
+}
+
 export default function ReservaModal({ cancha, user, onClose, onReservaCreada, agregarNotificacion }) {
   const [formData, setFormData] = useState({
     fecha: '',
@@ -121,7 +141,9 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
       agregarNotificacion('¡Reserva creada! Espera la confirmación del administrador ⚽', 'success');
       onReservaCreada();
     } catch (error) {
-      agregarNotificacion('Error al crear la reserva', 'error');
+      // Mostramos el motivo real que manda el backend (ej. horario ocupado);
+      // si no hay motivo, obtenerMensajeError devuelve el texto genérico.
+      agregarNotificacion(obtenerMensajeError(error), 'error');
     } finally {
       setLoading(false);
     }
@@ -181,7 +203,7 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
               type="date"
               required
               value={formData.fecha}
-              onChange={(e) => setFormData({...formData, fecha: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
               min={fechaLocalHoy()}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500"
             />
@@ -213,9 +235,8 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
               required
               value={formData.horaFin}
               onChange={(e) => handleHoraChange('horaFin', e.target.value)}
-              className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 ${
-                errorHoraFin ? 'border-red-500' : 'border-gray-300'
-              }`}
+              className={`w-full px-4 py-3 border-2 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500 ${errorHoraFin ? 'border-red-500' : 'border-gray-300'
+                }`}
             />
             {/* Mensaje de error inline, debajo del input.
                 Solo se renderiza cuando errorHoraFin tiene valor.
