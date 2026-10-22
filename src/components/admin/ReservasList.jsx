@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Clock, User, Mail, Phone, MapPin, Check, X, AlertTriangle } from 'lucide-react';
+import { Calendar, Clock, User, Mail, Check, X, AlertTriangle } from 'lucide-react';
 import { reservasAPI } from '../../services/api';
 // Color y emoji de estado compartidos con MisReservas (user) — fuente unica en src/constants/reservas.js
 import { getEstadoColor, getEstadoEmoji } from '../../constants/reservas';
@@ -27,7 +27,7 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
 
   const cancelarReserva = async (id) => {
     if (!window.confirm('¿Cancelar esta reserva?')) return;
-    
+
     try {
       await reservasAPI.cancelar(id);
       agregarNotificacion('❌ Reserva cancelada - Notificaciones enviadas al usuario y admin', 'success');
@@ -55,7 +55,7 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
           /*
            * GUARD DE DATOS INCOMPLETOS
            * Antes de intentar acceder a reserva.cancha.* o reserva.usuario.*
-           * verificamos que ambas relaciones existan. Si una falta, rendrizamos
+           * verificamos que ambas relaciones existan. Si una falta, renderizamos
            * una tarjeta de advertencia en lugar de explotar con TypeError.
            * Esto aísla el fallo a esta tarjeta; el .map() continúa con el
            * resto y las demás reservas se muestran normalmente.
@@ -100,7 +100,11 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
            * Solo llegamos aquí si cancha Y usuario existen. Aun así usamos
            * optional chaining (?.) + fallback ('—') en cada acceso anidado
            * para cubrir el caso de que un campo individual esté ausente
-           * dentro de un objeto que sí existe (ej: cancha sin ubicacion).
+           * dentro de un objeto que sí existe.
+           *
+           * NOTA: el backend (rama feat/03, DTOs) ya NO envía cancha.ubicacion
+           * ni usuario.telefono dentro de las reservas (decisión de diseño del
+           * backend), por eso esos datos ya no se muestran acá.
            */
           return (
             <div key={reserva.id} className="card hover:shadow-2xl transition-all duration-300 border-2 border-green-100">
@@ -112,10 +116,6 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
                       <h3 className="text-2xl font-bold text-gray-800 mb-2">
                         {reserva.cancha?.nombre ?? '—'}
                       </h3>
-                      <p className="text-sm text-gray-600 flex items-center gap-2">
-                        <MapPin size={16} className="text-green-600" />
-                        {reserva.cancha?.ubicacion ?? '—'}
-                      </p>
                     </div>
                     <span className={`px-4 py-2 rounded-xl text-sm font-bold border-2 ${getEstadoColor(reserva.estado)}`}>
                       {getEstadoEmoji(reserva.estado)} {reserva.estado}
@@ -137,10 +137,6 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
                         <p className="text-gray-700 flex items-center gap-2">
                           <Mail size={14} className="text-blue-600" />
                           {reserva.usuario?.email ?? '—'}
-                        </p>
-                        <p className="text-gray-700 flex items-center gap-2">
-                          <Phone size={14} className="text-blue-600" />
-                          {reserva.usuario?.telefono ?? '—'}
                         </p>
                       </div>
                     </div>

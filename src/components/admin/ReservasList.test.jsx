@@ -7,6 +7,10 @@
  * Cobertura mínima requerida:
  *  1. Reserva completa → se renderiza con sus datos normales.
  *  2. Reserva con cancha: null → se marca como anómala sin romper el resto.
+ *
+ * Los datos de prueba reflejan la forma real que manda el backend (rama feat/03,
+ * DTOs): la cancha trae id, nombre, tipo y precioPorHora, y el usuario trae
+ * id, nombre, apellido y email. NO traen cancha.ubicacion ni usuario.telefono.
  */
 
 import React from 'react';
@@ -34,8 +38,8 @@ jest.mock('../../services/api', () => ({
 // ---------------------------------------------------------------------------
 
 /**
- * Reserva completa: tiene cancha y usuario populados con todos sus campos.
- * Representa el caso feliz que debe renderizarse con datos normales.
+ * Reserva completa: tiene cancha y usuario populados con los campos que
+ * realmente manda el backend. Representa el caso feliz.
  */
 const reservaCompleta = {
   id: 1,
@@ -45,14 +49,12 @@ const reservaCompleta = {
   estado: 'CONFIRMADA',
   cancha: {
     nombre: 'Cancha Central',
-    ubicacion: 'Av. Siempreviva 742',
     tipo: 'FÚTBOL 5',
   },
   usuario: {
     nombre: 'Martín',
     apellido: 'García',
     email: 'martin@example.com',
-    telefono: '11-2345-6789',
   },
 };
 
@@ -72,7 +74,6 @@ const reservaConCanchaNula = {
     nombre: 'Ana',
     apellido: 'López',
     email: 'ana@example.com',
-    telefono: '11-9876-5432',
   },
 };
 
@@ -104,14 +105,6 @@ describe('ReservasList', () => {
 
       // El nombre de la cancha debe aparecer en pantalla
       expect(screen.getByText('Cancha Central')).toBeInTheDocument();
-    });
-
-    it('renderiza la ubicación de la cancha', () => {
-      render(
-        <ReservasList reservas={[reservaCompleta]} {...defaultProps} />,
-      );
-
-      expect(screen.getByText('Av. Siempreviva 742')).toBeInTheDocument();
     });
 
     it('renderiza el tipo de cancha', () => {
@@ -146,6 +139,19 @@ describe('ReservasList', () => {
 
       // El badge de estado aparece con emoji + texto
       expect(screen.getByText(/CONFIRMADA/)).toBeInTheDocument();
+    });
+
+    it('no muestra guiones de relleno con los datos que manda el backend', () => {
+      render(
+        <ReservasList reservas={[reservaCompleta]} {...defaultProps} />,
+      );
+
+      /*
+       * Como el backend ya no envía ubicacion ni telefono, la tarjeta no debe
+       * intentar mostrarlos. Si alguien los reintrodujera sin dato, aparecería
+       * un "—" suelto y este test fallaría.
+       */
+      expect(screen.queryByText('—')).not.toBeInTheDocument();
     });
   });
 
