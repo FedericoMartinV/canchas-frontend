@@ -1,40 +1,58 @@
 import React, { useState } from 'react';
 import { canchasAPI } from '../../services/api';
 
-export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
+const crearFormularioInicial = (cancha) => ({
+  nombre: cancha?.nombre ?? '',
+  ubicacion: cancha?.ubicacion ?? '',
+  tipo: cancha?.tipo ?? 'Futbol 5',
+  precioPorHora: cancha?.precioPorHora ?? '',
+  iluminacion: cancha?.iluminacion ?? true,
+});
+
+export default function CanchaForm({ cancha, onCanchaGuardada, agregarNotificacion }) {
   const [formData, setFormData] = useState({
-    nombre: '',
-    ubicacion: '',
-    tipo: 'Futbol 5',
-    precioPorHora: '',
-    iluminacion: true
+    ...crearFormularioInicial(cancha),
   });
   const [loading, setLoading] = useState(false);
+  const editando = Boolean(cancha);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await canchasAPI.create({
+      const datosCancha = {
         ...formData,
         precioPorHora: parseFloat(formData.precioPorHora)
-      });
-      agregarNotificacion('¡Cancha creada exitosamente! 🏟️', 'success');
-      onCanchaCreada();
+      };
+
+      if (editando) {
+        await canchasAPI.update(cancha.id, datosCancha);
+        agregarNotificacion('Cancha actualizada correctamente', 'success');
+      } else {
+        await canchasAPI.create(datosCancha);
+        agregarNotificacion('¡Cancha creada exitosamente! 🏟️', 'success');
+      }
+      onCanchaGuardada();
     } catch (error) {
-      agregarNotificacion('Error al crear cancha', 'error');
+      agregarNotificacion(
+        editando ? 'Error al actualizar cancha' : 'Error al crear cancha',
+        'error',
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="card mb-8 border-2 border-green-200">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">Crear Nueva Cancha</h3>
+    <div className="card admin-court-form-card mb-8 border-2 border-green-200">
+      <h3 className="text-2xl font-bold text-gray-800 mb-6">
+        {editando ? 'Editar Cancha' : 'Crear Nueva Cancha'}
+      </h3>
       <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Nombre de la cancha</label>
+          <label htmlFor="cancha-nombre" className="block text-sm font-bold text-gray-700 mb-2">Nombre de la cancha</label>
           <input
+            id="cancha-nombre"
             type="text"
             placeholder="Ej: Cancha Central"
             required
@@ -45,8 +63,9 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Ubicación</label>
+          <label htmlFor="cancha-ubicacion" className="block text-sm font-bold text-gray-700 mb-2">Ubicación</label>
           <input
+            id="cancha-ubicacion"
             type="text"
             placeholder="Ej: Av. San Martín 500"
             required
@@ -57,8 +76,9 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Tipo de cancha</label>
+          <label htmlFor="cancha-tipo" className="block text-sm font-bold text-gray-700 mb-2">Tipo de cancha</label>
           <select
+            id="cancha-tipo"
             value={formData.tipo}
             onChange={(e) => setFormData({...formData, tipo: e.target.value})}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500"
@@ -70,8 +90,9 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Precio por hora ($)</label>
+          <label htmlFor="cancha-precio" className="block text-sm font-bold text-gray-700 mb-2">Precio por hora ($)</label>
           <input
+            id="cancha-precio"
             type="number"
             placeholder="15000"
             required
@@ -97,9 +118,11 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary disabled:opacity-50"
+            className="admin-court-submit"
           >
-            {loading ? 'Creando...' : 'Crear Cancha ⚽'}
+            {loading
+              ? (editando ? 'Guardando...' : 'Creando...')
+              : (editando ? 'Guardar cambios' : 'Crear Cancha ⚽')}
           </button>
         </div>
       </form>

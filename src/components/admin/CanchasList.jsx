@@ -1,8 +1,8 @@
 import React from 'react';
-import { MapPin, DollarSign, Trash2, Users } from 'lucide-react';
+import { MapPin, DollarSign, Trash2, Users, Pencil } from 'lucide-react';
 import { canchasAPI } from '../../services/api';
 
-export default function CanchasList({ canchas, onCanchaEliminada, agregarNotificacion }) {
+export default function CanchasList({ canchas, onCanchaEliminada, onCanchaEditar, agregarNotificacion }) {
   const eliminarCancha = async (id, nombre) => {
     if (!window.confirm(`¿Eliminar la cancha "${nombre}"?`)) return;
     
@@ -26,9 +26,9 @@ export default function CanchasList({ canchas, onCanchaEliminada, agregarNotific
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="admin-court-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {canchas.map(cancha => (
-        <div key={cancha.id} className="card-cancha group">
+        <div key={cancha.id} className="card-cancha admin-court-card group">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-2xl font-bold text-gray-800 mb-1">{cancha.nombre}</h3>
@@ -71,6 +71,14 @@ export default function CanchasList({ canchas, onCanchaEliminada, agregarNotific
               </div>
             </div>
           </div>
+
+          <button
+            onClick={() => onCanchaEditar(cancha)}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 mb-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+          >
+            <Pencil size={18} />
+            Editar Cancha
+          </button>
 
           <button
             onClick={() => eliminarCancha(cancha.id, cancha.nombre)}

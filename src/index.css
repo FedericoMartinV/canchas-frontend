@@ -26,3 +26,182 @@ body {
   background-image: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
                     radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%);
 }
+
+.admin-court-toggle,
+.admin-court-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  min-height: 3.5rem;
+  padding: 0.875rem 1.5rem;
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  background: linear-gradient(to right, #16a34a, #059669);
+  color: #fff;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgb(16 185 129 / 0.3);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.admin-court-toggle:hover,
+.admin-court-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 20px -5px rgb(16 185 129 / 0.4);
+}
+
+.admin-court-toggle:focus-visible,
+.admin-court-submit:focus-visible {
+  outline: 3px solid #86efac;
+  outline-offset: 3px;
+}
+
+.admin-court-toggle-cancel {
+  background: linear-gradient(to right, #ef4444, #dc2626);
+  box-shadow: 0 10px 15px -3px rgb(239 68 68 / 0.3);
+}
+
+.admin-court-toggle-cancel:hover {
+  box-shadow: 0 15px 20px -5px rgb(239 68 68 / 0.4);
+}
+
+.admin-court-submit {
+  width: 100%;
+  min-height: 3.75rem;
+  margin-top: 0.25rem;
+}
+
+.admin-court-submit:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.admin-court-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1.75rem;
+  margin-top: 1.5rem;
+}
+
+.admin-court-card,
+.admin-reservation-card {
+  border: 1px solid #bbf7d0;
+  border-radius: 1.5rem;
+  background: linear-gradient(145deg, #fff 0%, #f0fdf4 100%);
+  box-shadow: 0 8px 24px rgb(22 101 52 / 0.12);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-court-card {
+  padding: 1.5rem;
+}
+
+.admin-court-form-card {
+  margin-bottom: 2rem;
+  padding: 1.75rem;
+  border: 1px solid #bbf7d0;
+  border-radius: 1.5rem;
+  background: linear-gradient(145deg, #fff 0%, #f0fdf4 100%);
+  box-shadow: 0 8px 24px rgb(22 101 52 / 0.12);
+}
+
+.admin-court-card:hover,
+.admin-reservation-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 32px rgb(22 101 52 / 0.18);
+}
+
+.admin-reservations-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  gap: 1.5rem;
+}
+
+.admin-reservation-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 1.5rem;
+  border: 2px solid #bbf7d0;
+  border-radius: 1.5rem;
+  background: linear-gradient(to bottom right, #fff, #f0fdf4);
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.admin-reservation-card:hover {
+  transform: translateY(-3px);
+  border-color: #4ade80;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.15);
+}
+
+.admin-reservation-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-reservation-court-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-reservation-status {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.6rem;
+  border-width: 1px;
+  font-size: 0.7rem;
+  line-height: 1rem;
+  white-space: nowrap;
+}
+
+.admin-reservation-details {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.admin-reservation-user {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #bbf7d0;
+}
+
+.admin-reservation-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+}
+
+.admin-reservation-action {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+.admin-reservation-card-incomplete {
+  border-color: #fdba74;
+  background: linear-gradient(145deg, #fff 0%, #fff7ed 100%);
+  box-shadow: 0 8px 24px rgb(194 65 12 / 0.12);
+}
+
+.admin-reservation-card-incomplete:hover {
+  box-shadow: 0 16px 32px rgb(194 65 12 / 0.18);
+}
+
+@media (max-width: 640px) {
+  .admin-court-card,
+  .admin-reservation-card,
+  .admin-court-form-card {
+    padding: 1.25rem;
+    border-radius: 1.25rem;
+  }
+
+}

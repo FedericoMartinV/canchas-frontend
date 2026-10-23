@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from '../shared/Header';
 import Footer from '../shared/Footer';
 import CanchasList from './CanchasList';
@@ -13,6 +13,25 @@ export default function AdminPanel({ user, logout, agregarNotificacion }) {
   const [canchas, setCanchas] = useState([]);
   const [reservas, setReservas] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [canchaEditando, setCanchaEditando] = useState(null);
+
+  const cargarCanchas = useCallback(async () => {
+    try {
+      const res = await canchasAPI.getAll();
+      setCanchas(res.data);
+    } catch (error) {
+      agregarNotificacion('Error al cargar canchas', 'error');
+    }
+  }, [agregarNotificacion]);
+
+  const cargarReservas = useCallback(async () => {
+    try {
+      const res = await reservasAPI.getAll();
+      setReservas(res.data);
+    } catch (error) {
+      agregarNotificacion('Error al cargar reservas', 'error');
+    }
+  }, [agregarNotificacion]);
 
   useEffect(() => {
     if (tab === 'canchas') {
@@ -20,29 +39,22 @@ export default function AdminPanel({ user, logout, agregarNotificacion }) {
     } else if (tab === 'reservas') {
       cargarReservas();
     }
-  }, [tab]);
-
-  const cargarCanchas = async () => {
-    try {
-      const res = await canchasAPI.getAll();
-      setCanchas(res.data);
-    } catch (error) {
-      agregarNotificacion('Error al cargar canchas', 'error');
-    }
-  };
-
-  const cargarReservas = async () => {
-    try {
-      const res = await reservasAPI.getAll();
-      setReservas(res.data);
-    } catch (error) {
-      agregarNotificacion('Error al cargar reservas', 'error');
-    }
-  };
+  }, [tab, cargarCanchas, cargarReservas]);
 
   const handleCanchaCreada = () => {
     setShowForm(false);
+    setCanchaEditando(null);
     cargarCanchas();
+  };
+
+  const handleCanchaEditar = (cancha) => {
+    setCanchaEditando(cancha);
+    setShowForm(true);
+  };
+
+  const handleFormularioCanchaToggle = () => {
+    setShowForm((visible) => !visible);
+    setCanchaEditando(null);
   };
 
   const handleCanchaEliminada = () => {
@@ -106,33 +118,36 @@ export default function AdminPanel({ user, logout, agregarNotificacion }) {
           <DashboardStats agregarNotificacion={agregarNotificacion} />
         )}
 
-        {tab === 'canchas' && (
-          <div>
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold text-gray-800">Canchas Disponibles</h2>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="flex items-center gap-2 btn-primary"
-              >
-                <Plus size={20} />
-                {showForm ? 'Cancelar' : 'Nueva Cancha'}
-              </button>
-            </div>
+      {tab === 'canchas' && (
+        <div>
+          <div className="flex flex-wrap justify-between items-center gap-4 mb-6">
+            <h2 className="text-3xl font-bold text-gray-800">Canchas Disponibles</h2>
+            <button
+              onClick={handleFormularioCanchaToggle}
+              className={`admin-court-toggle ${showForm ? 'admin-court-toggle-cancel' : ''}`}
+            >
+              <Plus size={20} />
+              {showForm ? 'Cancelar' : 'Nueva Cancha'}
+            </button>
+          </div>
 
-            {showForm && (
-              <CanchaForm 
-                onCanchaCreada={handleCanchaCreada}
-                agregarNotificacion={agregarNotificacion}
-              />
-            )}
-
-            <CanchasList 
-              canchas={canchas}
-              onCanchaEliminada={handleCanchaEliminada}
+          {showForm && (
+            <CanchaForm
+              key={canchaEditando?.id ?? 'nueva'}
+              cancha={canchaEditando}
+              onCanchaGuardada={handleCanchaCreada}
               agregarNotificacion={agregarNotificacion}
             />
-          </div>
-        )}
+          )}
+
+          <CanchasList
+            canchas={canchas}
+            onCanchaEditar={handleCanchaEditar}
+            onCanchaEliminada={handleCanchaEliminada}
+            agregarNotificacion={agregarNotificacion}
+          />
+        </div>
+      )}
 
         {tab === 'reservas' && (
           <ReservasList 
