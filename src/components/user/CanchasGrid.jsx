@@ -1,5 +1,6 @@
 import React from 'react';
 import { MapPin, DollarSign, Users } from 'lucide-react';
+import CanchaTipoIcono from '../shared/CanchaTipoIcono';
 
 export default function CanchasGrid({ canchas, onReservar }) {
   if (canchas.length === 0) {
@@ -26,9 +27,7 @@ export default function CanchasGrid({ canchas, onReservar }) {
                 {cancha.ubicacion}
               </p>
             </div>
-            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
-              {cancha.tipo}
-            </span>
+            <CanchaTipoIcono tipo={cancha.tipo} />
           </div>
 
           <div className="space-y-3 mb-6">

@@ -25,7 +25,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen soccer-ball-bg bg-futbol-pattern">
+    <div className="min-h-screen soccer-ball-bg">
       <Notification notificaciones={notificaciones} />
       
       {!user ? (

@@ -1,40 +1,74 @@
 import React, { useState } from 'react';
 import { canchasAPI } from '../../services/api';
 
-export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
+const crearFormularioInicial = (cancha) => ({
+  nombre: cancha?.nombre ?? '',
+  ubicacion: cancha?.ubicacion ?? '',
+  tipo: cancha?.tipo ?? 'Futbol 5',
+  precioPorHora: cancha?.precioPorHora ?? '',
+  iluminacion: cancha?.iluminacion ?? true,
+});
+
+export default function CanchaForm({ cancha, onCanchaGuardada, onClose, agregarNotificacion }) {
   const [formData, setFormData] = useState({
-    nombre: '',
-    ubicacion: '',
-    tipo: 'Futbol 5',
-    precioPorHora: '',
-    iluminacion: true
+    ...crearFormularioInicial(cancha),
   });
   const [loading, setLoading] = useState(false);
+  const editando = Boolean(cancha);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await canchasAPI.create({
+      const datosCancha = {
         ...formData,
         precioPorHora: parseFloat(formData.precioPorHora)
-      });
-      agregarNotificacion('¡Cancha creada exitosamente! 🏟️', 'success');
-      onCanchaCreada();
+      };
+
+      if (editando) {
+        await canchasAPI.update(cancha.id, datosCancha);
+        agregarNotificacion('Cancha actualizada correctamente', 'success');
+      } else {
+        await canchasAPI.create(datosCancha);
+        agregarNotificacion('¡Cancha creada exitosamente! 🏟️', 'success');
+      }
+      onCanchaGuardada();
     } catch (error) {
-      agregarNotificacion('Error al crear cancha', 'error');
+      agregarNotificacion(
+        editando ? 'Error al actualizar cancha' : 'Error al crear cancha',
+        'error',
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="card mb-8 border-2 border-green-200">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">Crear Nueva Cancha</h3>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div
+      className="court-form-modal-overlay"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && !loading) onClose();
+      }}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !loading) onClose();
+      }}
+    >
+      <section
+        aria-labelledby="court-form-modal-title"
+        aria-modal="true"
+        className="court-form-modal"
+        role="dialog"
+      >
+        <div className="court-form-modal-header">
+          <h2 className="text-2xl font-bold text-gray-800" id="court-form-modal-title">
+            {editando ? 'Editar Cancha' : 'Crear Nueva Cancha'}
+          </h2>
+        </div>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Nombre de la cancha</label>
+          <label htmlFor="cancha-nombre" className="block text-sm font-bold text-gray-700 mb-2">Nombre de la cancha</label>
           <input
+            id="cancha-nombre"
             type="text"
             placeholder="Ej: Cancha Central"
             required
@@ -45,8 +79,9 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Ubicación</label>
+          <label htmlFor="cancha-ubicacion" className="block text-sm font-bold text-gray-700 mb-2">Ubicación</label>
           <input
+            id="cancha-ubicacion"
             type="text"
             placeholder="Ej: Av. San Martín 500"
             required
@@ -57,8 +92,9 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Tipo de cancha</label>
+          <label htmlFor="cancha-tipo" className="block text-sm font-bold text-gray-700 mb-2">Tipo de cancha</label>
           <select
+            id="cancha-tipo"
             value={formData.tipo}
             onChange={(e) => setFormData({...formData, tipo: e.target.value})}
             className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500"
@@ -70,8 +106,9 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
         </div>
 
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Precio por hora ($)</label>
+          <label htmlFor="cancha-precio" className="block text-sm font-bold text-gray-700 mb-2">Precio por hora ($)</label>
           <input
+            id="cancha-precio"
             type="number"
             placeholder="15000"
             required
@@ -93,16 +130,27 @@ export default function CanchaForm({ onCanchaCreada, agregarNotificacion }) {
           </label>
         </div>
 
-        <div className="md:col-span-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full btn-primary disabled:opacity-50"
-          >
-            {loading ? 'Creando...' : 'Crear Cancha ⚽'}
-          </button>
-        </div>
-      </form>
+          <div className="court-form-modal-actions md:col-span-2">
+            <button
+              className="admin-court-toggle admin-court-toggle-cancel"
+              disabled={loading}
+              onClick={onClose}
+              type="button"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="admin-court-submit"
+            >
+              {loading
+                ? (editando ? 'Guardando...' : 'Creando...')
+                : (editando ? 'Guardar cambios' : 'Crear Cancha ⚽')}
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

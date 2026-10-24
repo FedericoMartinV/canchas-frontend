@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Clock } from 'lucide-react';
+import { X, Calendar, Clock, AlertTriangle } from 'lucide-react';
 import { reservasAPI } from '../../services/api';
 
 /**
@@ -78,6 +78,7 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
     horaFin: ''
   });
   const [loading, setLoading] = useState(false);
+  const [errorReserva, setErrorReserva] = useState(null);
 
   // Error específico del campo "Hora de fin".
   // null = sin error; string = mensaje a mostrar debajo del input.
@@ -91,6 +92,7 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
   function handleHoraChange(campo, valor) {
     const nuevoFormData = { ...formData, [campo]: valor };
     setFormData(nuevoFormData);
+    setErrorReserva(null);
 
     // Validamos con los valores ya actualizados (no con el state anterior)
     const error = validarCoherenciaHoras(nuevoFormData.horaInicio, nuevoFormData.horaFin);
@@ -110,6 +112,7 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
     }
 
     setLoading(true);
+    setErrorReserva(null);
     try {
       // El contrato con reservasAPI.create no cambia: recibe usuarioId, canchaId,
       // fecha, horaInicio y horaFin (los tres últimos vienen de formData via spread).
@@ -121,7 +124,19 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
       agregarNotificacion('¡Reserva creada! Espera la confirmación del administrador ⚽', 'success');
       onReservaCreada();
     } catch (error) {
-      agregarNotificacion('Error al crear la reserva', 'error');
+      const status = error.response?.status;
+      const detalle = [
+        error.response?.data?.message,
+        error.response?.data?.error,
+        error.response?.data?.mensaje,
+      ].find((mensaje) => typeof mensaje === 'string');
+      const esConflicto = status === 409 || /ocupad|reservad|disponib|solap|overlap|already exists|conflict/i.test(detalle ?? '');
+
+      setErrorReserva(
+        esConflicto
+          ? 'Ese horario ya está ocupado. Elegí otra fecha u horario para la cancha.'
+          : detalle || 'No se pudo crear la reserva. Revisá los datos e intentá nuevamente.',
+      );
     } finally {
       setLoading(false);
     }
@@ -181,7 +196,10 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
               type="date"
               required
               value={formData.fecha}
-              onChange={(e) => setFormData({...formData, fecha: e.target.value})}
+              onChange={(e) => {
+                setFormData({ ...formData, fecha: e.target.value });
+                setErrorReserva(null);
+              }}
               min={fechaLocalHoy()}
               className="w-full px-4 py-3 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-green-200 focus:border-green-500"
             />
@@ -227,6 +245,16 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
             )}
           </div>
 
+          {errorReserva && (
+            <div
+              className="flex items-start gap-3 rounded-xl border-2 border-red-200 bg-red-50 p-4 text-red-800"
+              role="alert"
+            >
+              <AlertTriangle size={20} className="mt-0.5 flex-shrink-0 text-red-600" />
+              <p className="text-sm font-semibold">{errorReserva}</p>
+            </div>
+          )}
+
           {/* Resumen de duración y precio total.
               Solo aparece cuando duracionMin es un número positivo, es decir,
               cuando ambas horas son válidas y no hay error activo.
@@ -249,18 +277,18 @@ export default function ReservaModal({ cancha, user, onClose, onReservaCreada, a
             </div>
           )}
 
-          <div className="flex gap-3 mt-6">
+          <div className="reservation-modal-actions">
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 btn-primary disabled:opacity-50"
+              className="admin-court-submit"
             >
-              {loading ? 'Reservando...' : 'Confirmar Reserva ⚽'}
+              {loading ? 'Reservando...' : 'Confirmar ⚽'}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 btn-secondary"
+              className="admin-court-toggle admin-court-toggle-cancel"
             >
               Cancelar
             </button>
