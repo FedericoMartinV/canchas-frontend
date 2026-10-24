@@ -122,8 +122,199 @@ body {
 
 .admin-reservations-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
   gap: 1.5rem;
+}
+
+.admin-reservations-calendar {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  flex-direction: column;
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid #bbf7d0;
+  border-radius: 1.5rem;
+  background: linear-gradient(145deg, #fff 0%, #f0fdf4 100%);
+  box-shadow: 0 8px 24px rgb(22 101 52 / 0.12);
+}
+
+.admin-reservations-calendar-view {
+  display: flex;
+  min-height: max(28rem, calc(100vh - 18rem));
+  flex-direction: column;
+}
+
+.admin-reservations-calendar-heading,
+.admin-reservations-calendar-navigation,
+.admin-reservations-calendar-footer,
+.admin-reservations-results-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-reservations-calendar-heading {
+  margin-bottom: 1.25rem;
+}
+
+.admin-reservations-calendar-heading h3 {
+  margin: 0;
+  color: #14532d;
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.admin-reservations-calendar-navigation {
+  gap: 0.5rem;
+}
+
+.admin-reservations-calendar-navigation button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #15803d;
+  cursor: pointer;
+}
+
+.admin-reservations-calendar-navigation button {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.admin-reservations-calendar-navigation button:hover {
+  background: #f0fdf4;
+}
+
+.admin-reservations-calendar-grid {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-rows: auto repeat(6, minmax(2.75rem, 1fr));
+  gap: clamp(0.25rem, 1vw, 0.75rem);
+}
+
+.admin-reservations-calendar-weekday {
+  padding: 0.5rem 0;
+  color: #4b5563;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.admin-reservations-calendar-day,
+.admin-reservations-calendar-empty {
+  min-height: 3rem;
+}
+
+.admin-reservations-calendar-day {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  background: rgb(255 255 255 / 0.75);
+  color: #1f2937;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-reservations-calendar-day:hover {
+  border-color: #86efac;
+  background: #dcfce7;
+}
+
+.admin-reservations-calendar-day.has-reservations {
+  border-color: #86efac;
+  background: linear-gradient(145deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #14532d;
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px rgb(22 163 74 / 0.08);
+}
+
+.admin-reservations-calendar-day.has-reservations:hover {
+  border-color: #16a34a;
+  background: linear-gradient(145deg, #bbf7d0 0%, #86efac 100%);
+}
+
+.admin-reservations-calendar-day.is-today {
+  border-color: #22c55e;
+  font-weight: 700;
+}
+
+.admin-reservations-calendar-day.is-selected {
+  border-color: #15803d;
+  background: linear-gradient(to right, #16a34a, #059669);
+  color: #fff;
+}
+
+.admin-reservations-calendar-day.is-selected.has-reservations {
+  background: linear-gradient(to right, #16a34a, #059669);
+  color: #fff;
+}
+
+.admin-reservations-calendar-count {
+  position: absolute;
+  right: 0.25rem;
+  bottom: 0.15rem;
+  min-width: 0.9rem;
+  color: #15803d;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-align: center;
+}
+
+.admin-reservations-calendar-day.is-selected .admin-reservations-calendar-count {
+  color: #fff;
+}
+
+.admin-reservations-calendar-footer {
+  margin-top: 1rem;
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.admin-reservations-results-heading {
+  margin-bottom: 1rem;
+}
+
+.admin-reservation-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.admin-reservations-results-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-reservations-results-heading span {
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.admin-reservation-day-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.admin-reservation-day-toggle {
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
 }
 
 .admin-reservation-card {
@@ -208,6 +399,31 @@ body {
   .admin-court-form-card {
     padding: 1.25rem;
     border-radius: 1.25rem;
+  }
+
+  .admin-reservations-calendar {
+    padding: 1rem;
+  }
+
+  .admin-reservations-calendar-view {
+    min-height: max(26rem, calc(100vh - 16rem));
+  }
+
+  .admin-reservations-calendar-grid {
+    gap: 0.2rem;
+  }
+
+  .admin-reservations-calendar-day,
+  .admin-reservations-calendar-empty {
+    min-height: 2.25rem;
+  }
+
+  .admin-reservations-calendar-day {
+    border-radius: 0.65rem;
+  }
+
+  .admin-reservations-results-toolbar {
+    align-items: stretch;
   }
 
 }

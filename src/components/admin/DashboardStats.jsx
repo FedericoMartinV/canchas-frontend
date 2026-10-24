@@ -3,84 +3,9 @@ import {
   BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
-import { TrendingUp, DollarSign, Clock, Calendar, Activity } from 'lucide-react';
-import { reservasAPI, canchasAPI } from '../../services/api';
-
-// ---------------------------------------------------------------------------
-// Helpers de tiempo
-// El DTO serializa LocalTime como { hour, minute, second, nano }.
-// Antes (entidad JPA directa) llegaba como string "19:00:00".
-// Soportamos ambos formatos.
-// ---------------------------------------------------------------------------
-
-function localTimeAMinutos(hora) {
-  if (!hora) return 0;
-  if (typeof hora === 'string') {
-    const [h, m] = hora.split(':').map(Number);
-    return h * 60 + m;
-  }
-  return (hora.hour ?? 0) * 60 + (hora.minute ?? 0);
-}
-
-function duracionEnHoras(horaInicio, horaFin) {
-  const diff = localTimeAMinutos(horaFin) - localTimeAMinutos(horaInicio);
-  return diff > 0 ? diff / 60 : 0;
-}
-
-// ---------------------------------------------------------------------------
-// Cálculo de estadísticas — todo en el cliente, sin endpoint propio
-// ---------------------------------------------------------------------------
-
-function calcularEstadisticas(reservas, canchas, mes, anio) {
-  // Filtramos por mes y año sobre el campo "fecha" (string "YYYY-MM-DD")
-  const delMes = reservas.filter(r => {
-    if (!r.fecha) return false;
-    const [y, m] = r.fecha.split('-').map(Number);
-    return y === anio && m === mes;
-  });
-
-  const confirmadas = delMes.filter(r => r.estado === 'CONFIRMADA');
-  const pendientes  = delMes.filter(r => r.estado === 'PENDIENTE');
-  const canceladas  = delMes.filter(r => r.estado === 'CANCELADA');
-
-  // Horas e ingresos — solo reservas CONFIRMADAS
-  const horasTotales = confirmadas.reduce((sum, r) =>
-    sum + duracionEnHoras(r.horaInicio, r.horaFin), 0);
-
-  const ingresosTotales = confirmadas.reduce((sum, r) => {
-    const precio = Number(r.cancha?.precioPorHora ?? 0);
-    const horas  = duracionEnHoras(r.horaInicio, r.horaFin);
-    return sum + precio * horas;
-  }, 0);
-
-  // Agrupación por cancha (para los gráficos de barras)
-  const porCanchaMap = {};
-  confirmadas.forEach(r => {
-    const id     = r.cancha?.id ?? 'sin-cancha';
-    const nombre = r.cancha?.nombre ?? 'Sin cancha';
-    const precio = Number(r.cancha?.precioPorHora ?? 0);
-    const horas  = duracionEnHoras(r.horaInicio, r.horaFin);
-
-    if (!porCanchaMap[id]) {
-      porCanchaMap[id] = { nombreCancha: nombre, cantidadReservas: 0, horasReservadas: 0, ingresos: 0 };
-    }
-    porCanchaMap[id].cantidadReservas += 1;
-    porCanchaMap[id].horasReservadas  += horas;
-    porCanchaMap[id].ingresos         += precio * horas;
-  });
-
-  return {
-    stats: {
-      totalReservas:        delMes.length,
-      reservasConfirmadas:  confirmadas.length,
-      reservasPendientes:   pendientes.length,
-      reservasCanceladas:   canceladas.length,
-      horasTotalesReservadas: horasTotales,
-      ingresosTotales,
-    },
-    porCancha: Object.values(porCanchaMap),
-  };
-}
+import { TrendingUp, DollarSign, Clock, Calendar, Activity, XCircle } from 'lucide-react';
+import { reservasAPI } from '../../services/api';
+import { calcularEstadisticas } from '../../utils/estadisticas';
 
 // ---------------------------------------------------------------------------
 // Componente
@@ -88,7 +13,6 @@ function calcularEstadisticas(reservas, canchas, mes, anio) {
 
 export default function DashboardStats({ agregarNotificacion }) {
   const [todasLasReservas, setTodasLasReservas] = useState([]);
-  const [canchas, setCanchas] = useState([]);
   const [mesSeleccionado,  setMesSeleccionado]  = useState(new Date().getMonth() + 1);
   const [anioSeleccionado, setAnioSeleccionado] = useState(new Date().getFullYear());
   const [loading, setLoading] = useState(true);
@@ -98,12 +22,8 @@ export default function DashboardStats({ agregarNotificacion }) {
     const cargar = async () => {
       setLoading(true);
       try {
-        const [resRes, canchasRes] = await Promise.all([
-          reservasAPI.getAll(),
-          canchasAPI.getAll(),
-        ]);
+        const resRes = await reservasAPI.getAll();
         setTodasLasReservas(resRes.data);
-        setCanchas(canchasRes.data);
       } catch {
         agregarNotificacion('Error al cargar estadísticas', 'error');
       } finally {
@@ -115,7 +35,7 @@ export default function DashboardStats({ agregarNotificacion }) {
 
   // El filtro por mes/año se recalcula en el cliente cada vez que cambia el selector
   const { stats: estadisticas, porCancha: reservasPorCancha } =
-    calcularEstadisticas(todasLasReservas, canchas, mesSeleccionado, anioSeleccionado);
+    calcularEstadisticas(todasLasReservas, mesSeleccionado, anioSeleccionado);
 
   if (loading) {
     return (
@@ -170,7 +90,7 @@ export default function DashboardStats({ agregarNotificacion }) {
       </div>
 
       {/* Tarjetas de Resumen */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 gap-6">
         <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-xl p-6 text-white">
           <div className="flex items-center justify-between mb-4">
             <Activity size={32} />
@@ -205,6 +125,15 @@ export default function DashboardStats({ agregarNotificacion }) {
           </div>
           <h3 className="text-lg font-semibold">Confirmadas</h3>
           <p className="text-orange-100 text-sm">{estadisticas.reservasPendientes} pendientes</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-red-500 to-rose-700 rounded-2xl shadow-xl p-6 text-white">
+          <div className="flex items-center justify-between mb-4">
+            <XCircle size={32} />
+            <span className="text-3xl font-bold">{estadisticas.reservasCanceladas}</span>
+          </div>
+          <h3 className="text-lg font-semibold">Canceladas</h3>
+          <p className="text-red-100 text-sm">Del mes seleccionado</p>
         </div>
       </div>
 
