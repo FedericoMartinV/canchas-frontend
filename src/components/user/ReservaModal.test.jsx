@@ -122,6 +122,7 @@ describe('ReservaModal', () => {
   // Limpiamos mocks entre tests para no contaminar llamadas
   beforeEach(() => {
     reservasAPI.create.mockClear();
+    defaultProps.onClose.mockClear();
     defaultProps.onReservaCreada.mockClear();
     defaultProps.agregarNotificacion.mockClear();
   });
@@ -244,6 +245,26 @@ describe('ReservaModal', () => {
   // --------------------------------------------------------------------------
 
   describe('(c) envío del formulario con horarios válidos', () => {
+    it('muestra dentro del modal cuando el horario ya está ocupado', async () => {
+      reservasAPI.create.mockRejectedValueOnce({
+        response: { status: 409, data: { message: 'Conflicto de horario' } },
+      });
+      const btnSubmit = completarFormulario({
+        fecha: fechaFutura(),
+        horaInicio: '10:00',
+        horaFin: '11:30',
+      });
+
+      fireEvent.click(btnSubmit);
+
+      const aviso = await screen.findByRole('alert');
+      expect(aviso).toHaveTextContent('Ese horario ya está ocupado');
+      expect(defaultProps.onClose).not.toHaveBeenCalled();
+      expect(defaultProps.onReservaCreada).not.toHaveBeenCalled();
+      expect(defaultProps.agregarNotificacion).not.toHaveBeenCalled();
+      expect(screen.getByDisplayValue('10:00')).toBeInTheDocument();
+    });
+
     it('llama a reservasAPI.create una sola vez con los campos correctos', async () => {
       // Usamos fechaFutura() y la guardamos en una constante para que el
       // valor pasado al formulario y el valor esperado en toHaveBeenCalledWith
