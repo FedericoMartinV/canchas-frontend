@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { X } from 'lucide-react';
 import { canchasAPI } from '../../services/api';
 
 const crearFormularioInicial = (cancha) => ({
@@ -9,7 +10,7 @@ const crearFormularioInicial = (cancha) => ({
   iluminacion: cancha?.iluminacion ?? true,
 });
 
-export default function CanchaForm({ cancha, onCanchaGuardada, agregarNotificacion }) {
+export default function CanchaForm({ cancha, onCanchaGuardada, onClose, agregarNotificacion }) {
   const [formData, setFormData] = useState({
     ...crearFormularioInicial(cancha),
   });
@@ -44,11 +45,36 @@ export default function CanchaForm({ cancha, onCanchaGuardada, agregarNotificaci
   };
 
   return (
-    <div className="card admin-court-form-card mb-8 border-2 border-green-200">
-      <h3 className="text-2xl font-bold text-gray-800 mb-6">
-        {editando ? 'Editar Cancha' : 'Crear Nueva Cancha'}
-      </h3>
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div
+      className="court-form-modal-overlay"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && !loading) onClose();
+      }}
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !loading) onClose();
+      }}
+    >
+      <section
+        aria-labelledby="court-form-modal-title"
+        aria-modal="true"
+        className="court-form-modal"
+        role="dialog"
+      >
+        <div className="court-form-modal-header">
+          <h2 className="text-2xl font-bold text-gray-800" id="court-form-modal-title">
+            {editando ? 'Editar Cancha' : 'Crear Nueva Cancha'}
+          </h2>
+          <button
+            aria-label="Cerrar formulario"
+            className="court-form-modal-close"
+            disabled={loading}
+            onClick={onClose}
+            type="button"
+          >
+            <X aria-hidden="true" size={22} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
           <label htmlFor="cancha-nombre" className="block text-sm font-bold text-gray-700 mb-2">Nombre de la cancha</label>
           <input
@@ -114,18 +140,27 @@ export default function CanchaForm({ cancha, onCanchaGuardada, agregarNotificaci
           </label>
         </div>
 
-        <div className="md:col-span-2">
-          <button
-            type="submit"
-            disabled={loading}
-            className="admin-court-submit"
-          >
-            {loading
-              ? (editando ? 'Guardando...' : 'Creando...')
-              : (editando ? 'Guardar cambios' : 'Crear Cancha ⚽')}
-          </button>
-        </div>
-      </form>
+          <div className="court-form-modal-actions md:col-span-2">
+            <button
+              className="admin-court-toggle admin-court-toggle-cancel"
+              disabled={loading}
+              onClick={onClose}
+              type="button"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="admin-court-submit"
+            >
+              {loading
+                ? (editando ? 'Guardando...' : 'Creando...')
+                : (editando ? 'Guardar cambios' : 'Crear Cancha ⚽')}
+            </button>
+          </div>
+        </form>
+      </section>
     </div>
   );
 }

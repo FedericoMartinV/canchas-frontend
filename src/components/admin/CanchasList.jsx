@@ -1,17 +1,25 @@
-import React from 'react';
-import { MapPin, DollarSign, Trash2, Users, Pencil } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, DollarSign, Trash2, Users, Pencil, AlertTriangle } from 'lucide-react';
 import { canchasAPI } from '../../services/api';
 
 export default function CanchasList({ canchas, onCanchaEliminada, onCanchaEditar, agregarNotificacion }) {
-  const eliminarCancha = async (id, nombre) => {
-    if (!window.confirm(`¿Eliminar la cancha "${nombre}"?`)) return;
-    
+  const [canchaAEliminar, setCanchaAEliminar] = useState(null);
+  const [eliminando, setEliminando] = useState(false);
+
+  const eliminarCancha = async () => {
+    if (!canchaAEliminar) return;
+
+    setEliminando(true);
     try {
-      await canchasAPI.delete(id);
+      await canchasAPI.delete(canchaAEliminar.id);
+      setCanchaAEliminar(null);
       agregarNotificacion('Cancha eliminada correctamente', 'success');
       onCanchaEliminada();
     } catch (error) {
+      setCanchaAEliminar(null);
       agregarNotificacion('Error al eliminar cancha', 'error');
+    } finally {
+      setEliminando(false);
     }
   };
 
@@ -81,7 +89,7 @@ export default function CanchasList({ canchas, onCanchaEliminada, onCanchaEditar
           </button>
 
           <button
-            onClick={() => eliminarCancha(cancha.id, cancha.nombre)}
+            onClick={() => setCanchaAEliminar(cancha)}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
           >
             <Trash2 size={18} />
@@ -89,6 +97,54 @@ export default function CanchasList({ canchas, onCanchaEliminada, onCanchaEditar
           </button>
         </div>
       ))}
+
+      {canchaAEliminar && (
+        <div
+          className="court-delete-modal-overlay"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && !eliminando) setCanchaAEliminar(null);
+          }}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !eliminando) setCanchaAEliminar(null);
+          }}
+        >
+          <section
+            aria-labelledby="court-delete-modal-title"
+            aria-modal="true"
+            className="court-delete-modal"
+            role="dialog"
+          >
+            <div className="court-delete-modal-icon">
+              <AlertTriangle aria-hidden="true" size={28} />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800" id="court-delete-modal-title">
+              ¿Eliminar cancha?
+            </h2>
+            <p className="mt-3 text-gray-600">
+              ¿Estás seguro de que querés eliminar <strong>{canchaAEliminar.nombre}</strong>? Esta acción no se puede deshacer.
+            </p>
+            <div className="court-delete-modal-actions">
+              <button
+                className="admin-court-toggle"
+                disabled={eliminando}
+                onClick={() => setCanchaAEliminar(null)}
+                type="button"
+              >
+                Volver
+              </button>
+              <button
+                className="admin-court-toggle admin-court-toggle-cancel"
+                disabled={eliminando}
+                onClick={eliminarCancha}
+                type="button"
+              >
+                <Trash2 aria-hidden="true" size={18} />
+                {eliminando ? 'Eliminando...' : 'Eliminar cancha'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

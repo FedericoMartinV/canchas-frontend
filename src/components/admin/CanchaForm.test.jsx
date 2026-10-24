@@ -21,6 +21,23 @@ const cancha = {
 };
 
 describe('CanchaForm', () => {
+  it('se muestra como modal y permite cerrarlo', () => {
+    const onClose = jest.fn();
+
+    render(
+      <CanchaForm
+        onClose={onClose}
+        onCanchaGuardada={jest.fn()}
+        agregarNotificacion={jest.fn()}
+      />,
+    );
+
+    expect(screen.getByRole('dialog')).toHaveAccessibleName('Crear Nueva Cancha');
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar formulario' }));
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
   });

@@ -57,6 +57,11 @@ export default function AdminPanel({ user, logout, agregarNotificacion }) {
     setCanchaEditando(null);
   };
 
+  const cerrarFormularioCancha = () => {
+    setShowForm(false);
+    setCanchaEditando(null);
+  };
+
   const handleCanchaEliminada = () => {
     cargarCanchas();
   };
@@ -136,6 +141,7 @@ export default function AdminPanel({ user, logout, agregarNotificacion }) {
               key={canchaEditando?.id ?? 'nueva'}
               cancha={canchaEditando}
               onCanchaGuardada={handleCanchaCreada}
+              onClose={cerrarFormularioCancha}
               agregarNotificacion={agregarNotificacion}
             />
           )}
