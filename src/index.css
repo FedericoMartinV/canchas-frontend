@@ -23,8 +23,14 @@ body {
 }
 
 .soccer-ball-bg {
-  background-image: radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-                    radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%);
+  background-image:
+    radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(34, 197, 94, 0.1) 0%, transparent 50%),
+    linear-gradient(rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.78)),
+    url('./assets/fondo-cancha.jpg');
+  background-position: center;
+  background-size: cover;
+  background-attachment: fixed;
 }
 
 .admin-court-toggle,
