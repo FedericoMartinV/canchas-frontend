@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Clock, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { formatearHora, localTimeAMinutos } from '../../utils/tiempo';
+import EstadoReservaIcono from '../shared/EstadoReservaIcono';
 
 /**
  * Determina si una reserva tiene los datos anidados mínimos para renderizarse
@@ -10,25 +11,6 @@ import { formatearHora, localTimeAMinutos } from '../../utils/tiempo';
  * componente es de vista de usuario propio y no muestra datos de terceros.
  */
 const esReservaIncompleta = (reserva) => !reserva.cancha;
-
-const getEstadoColor = (estado) => {
-  switch (estado) {
-    case 'CONFIRMADA':
-      return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300';
-    case 'CANCELADA':
-      return 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-300';
-    default:
-      return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-300';
-  }
-};
-
-const getEstadoEmoji = (estado) => {
-  switch (estado) {
-    case 'CONFIRMADA': return '✅';
-    case 'CANCELADA': return '❌';
-    default: return '⏳';
-  }
-};
 
 const formatearFecha = (fecha) => {
   if (!fecha) return 'Fecha desconocida';
@@ -171,14 +153,12 @@ export default function MisReservas({ reservas }) {
                   return (
                     <div key={reserva.id} className="admin-reservation-card">
                       <div className="admin-reservation-heading">
-                        <div>
+                        <div className="admin-reservation-title">
                           <h3 className="admin-reservation-court-name text-2xl font-bold text-gray-800 mb-1">
                             {reserva.cancha?.nombre ?? '—'}
                           </h3>
                         </div>
-                        <span className={`admin-reservation-status rounded-full font-bold ${getEstadoColor(reserva.estado)}`}>
-                          {getEstadoEmoji(reserva.estado)} {reserva.estado}
-                        </span>
+                        <EstadoReservaIcono estado={reserva.estado} />
                       </div>
 
                       <div className="admin-reservation-details">

@@ -55,5 +55,9 @@ describe('MisReservas', () => {
     expect(within(grupos[0]).getByText('Cancha Mañana')).toBeInTheDocument();
     expect(within(grupos[0]).getByText('Cancha Tarde')).toBeInTheDocument();
     expect(within(grupos[1]).getByText('Cancha Domingo')).toBeInTheDocument();
+    expect(within(grupos[0]).getByLabelText('Estado de la reserva: CONFIRMADA')).toBeInTheDocument();
+    expect(within(grupos[0]).getAllByRole('tooltip').some((tooltip) => (
+      tooltip.textContent === 'CONFIRMADA'
+    ))).toBe(true);
   });
 });

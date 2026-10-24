@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
 import { canchasAPI } from '../../services/api';
 
 const crearFormularioInicial = (cancha) => ({
@@ -64,15 +63,6 @@ export default function CanchaForm({ cancha, onCanchaGuardada, onClose, agregarN
           <h2 className="text-2xl font-bold text-gray-800" id="court-form-modal-title">
             {editando ? 'Editar Cancha' : 'Crear Nueva Cancha'}
           </h2>
-          <button
-            aria-label="Cerrar formulario"
-            className="court-form-modal-close"
-            disabled={loading}
-            onClick={onClose}
-            type="button"
-          >
-            <X aria-hidden="true" size={22} />
-          </button>
         </div>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>

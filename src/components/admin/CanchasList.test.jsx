@@ -38,6 +38,13 @@ describe('CanchasList', () => {
     />,
   );
 
+  it('muestra el tipo de cancha como una pelota con el número y una descripción accesible', () => {
+    renderCanchas();
+
+    expect(screen.getByRole('img', { name: 'Tipo de cancha: Fútbol 5' })).toBeInTheDocument();
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Fútbol 5');
+  });
+
   it('abre un modal propio y permite cancelar sin eliminar la cancha', () => {
     renderCanchas();
 

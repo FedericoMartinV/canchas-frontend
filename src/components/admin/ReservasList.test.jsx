@@ -109,7 +109,7 @@ const renderReservasEnFecha = (reservas, fecha = reservas[0]?.fecha) => {
 
   const cantidadReservas = reservas.filter((reserva) => reserva.fecha === fecha).length;
   fireEvent.click(screen.getByRole('button', {
-    name: `${fecha}, ${cantidadReservas} reservas`,
+    name: new RegExp(`${fecha}, ${cantidadReservas} reservas`),
   }));
 };
 
@@ -118,6 +118,26 @@ const renderReservasEnFecha = (reservas, fecha = reservas[0]?.fecha) => {
 // ---------------------------------------------------------------------------
 
 describe('ReservasList', () => {
+  it('marca en el calendario los días que tienen reservas pendientes', () => {
+    const hoy = new Date();
+    const fechaHoy = [
+      hoy.getFullYear(),
+      String(hoy.getMonth() + 1).padStart(2, '0'),
+      String(hoy.getDate()).padStart(2, '0'),
+    ].join('-');
+    const reservasDeHoy = [
+      { ...reservaCompleta, id: 10, fecha: fechaHoy, estado: 'PENDIENTE' },
+      { ...reservaCompleta, id: 11, fecha: fechaHoy, estado: 'CONFIRMADA' },
+    ];
+    render(<ReservasList reservas={reservasDeHoy} {...defaultProps} />);
+
+    const diaConPendiente = screen.getByRole('button', {
+      name: `${fechaHoy}, 2 reservas, 1 pendiente`,
+    });
+    expect(diaConPendiente).toHaveClass('has-pending-reservations');
+    expect(screen.getByRole('tooltip')).toHaveTextContent('1 solicitud pendiente');
+  });
+
   it('filtra las reservas al seleccionar un día del calendario', () => {
     const hoy = new Date();
     const fechaSeleccionada = [
@@ -134,7 +154,7 @@ describe('ReservasList', () => {
       <ReservasList reservas={reservasDelDia} {...defaultProps} />,
     );
 
-    const diaConReservas = screen.getByRole('button', { name: `${fechaSeleccionada}, 2 reservas` });
+    const diaConReservas = screen.getByRole('button', { name: new RegExp(`${fechaSeleccionada}, 2 reservas`) });
     expect(diaConReservas).toHaveClass('has-reservations');
     fireEvent.click(diaConReservas);
 
@@ -170,8 +190,8 @@ describe('ReservasList', () => {
     expect(screen.queryByLabelText('Calendario de reservas')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Volver al calendario' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Ver todas' })).not.toBeInTheDocument();
-    expect(screen.getAllByRole('heading', { name: /Reservas del/ })).toHaveLength(2);
-    expect(screen.getAllByRole('heading', { name: /Reservas del/ })[0])
+    expect(screen.getAllByRole('heading', { name: /miércoles, 15 de octubre de 2025|jueves, 16 de octubre de 2025/i })).toHaveLength(2);
+    expect(screen.getAllByRole('heading', { name: /miércoles, 15 de octubre de 2025/i })[0])
       .toHaveTextContent(/miércoles/i);
     expect(screen.getByText('2 reservas')).toBeInTheDocument();
     expect(screen.getByText('1 reserva')).toBeInTheDocument();
@@ -180,7 +200,7 @@ describe('ReservasList', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
     const grupoMiercoles = screen.getByRole('button', {
-      name: 'Mostrar reservas del miércoles, 15 de octubre de 2025',
+      name: 'Mostrar reservas del Miércoles, 15 de octubre de 2025',
     });
     fireEvent.click(grupoMiercoles);
     expect(screen.getByText('Cancha Central')).toBeInTheDocument();
@@ -188,7 +208,7 @@ describe('ReservasList', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', {
-      name: 'Mostrar reservas del jueves, 16 de octubre de 2025',
+      name: 'Mostrar reservas del Jueves, 16 de octubre de 2025',
     }));
     expect(screen.getByRole('alert')).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /Ocultar reservas del/ })).toHaveLength(2);
@@ -235,8 +255,8 @@ describe('ReservasList', () => {
     it('renderiza el estado de la reserva', () => {
       renderReservasEnFecha([reservaCompleta]);
 
-      // El badge de estado aparece con emoji + texto
-      expect(screen.getByText(/CONFIRMADA/)).toBeInTheDocument();
+      expect(screen.getByLabelText('Estado de la reserva: CONFIRMADA')).toBeInTheDocument();
+      expect(screen.getByRole('tooltip')).toHaveTextContent('CONFIRMADA');
     });
   });
 
@@ -266,7 +286,7 @@ describe('ReservasList', () => {
       renderReservasEnFecha([reservaConCanchaNula]);
 
       expect(
-        screen.getByRole('heading', { name: /Reservas del jueves, 16 de octubre de 2025/i }),
+        screen.getByRole('heading', { name: /jueves, 16 de octubre de 2025/i }),
       ).toBeInTheDocument();
     });
   });

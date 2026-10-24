@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Clock, User, Mail, Check, X, AlertTriangle, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from 'lucide-react';
 import { reservasAPI } from '../../services/api';
 import { formatearHora, localTimeAMinutos } from '../../utils/tiempo';
+import EstadoReservaIcono from '../shared/EstadoReservaIcono';
 
 /**
  * Determina si una reserva tiene los datos anidados mínimos para renderizarse
@@ -53,7 +54,9 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
 
   const reservasPorFecha = reservas.reduce((conteo, reserva) => {
     if (reserva.fecha) {
-      conteo[reserva.fecha] = (conteo[reserva.fecha] ?? 0) + 1;
+      conteo[reserva.fecha] ??= { total: 0, pendientes: 0 };
+      conteo[reserva.fecha].total += 1;
+      if (reserva.estado === 'PENDIENTE') conteo[reserva.fecha].pendientes += 1;
     }
     return conteo;
   }, {});
@@ -115,28 +118,9 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
     }
   };
 
-  const getEstadoColor = (estado) => {
-    switch (estado) {
-      case 'CONFIRMADA':
-        return 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300';
-      case 'CANCELADA':
-        return 'bg-gradient-to-r from-red-100 to-rose-100 text-red-800 border-red-300';
-      default:
-        return 'bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border-yellow-300';
-    }
-  };
-
-  const getEstadoEmoji = (estado) => {
-    switch (estado) {
-      case 'CONFIRMADA': return '✅';
-      case 'CANCELADA': return '❌';
-      default: return '⏳';
-    }
-  };
-
   return (
     <div className="admin-reservations">
-      <h2 className="text-3xl font-bold text-gray-800 mb-6">Todas las Reservas</h2>
+      <h2 className="text-3xl font-bold text-gray-800 mb-6">Reservas</h2>
       {mostrarCalendario ? (
       <section className="admin-reservations-calendar-view">
       <section className="admin-reservations-calendar" aria-label="Calendario de reservas">
@@ -173,7 +157,8 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
             }
 
             const fecha = fechaComoClave(mesVisible.getFullYear(), mesVisible.getMonth(), dia);
-            const cantidadReservas = reservasPorFecha[fecha] ?? 0;
+            const resumenFecha = reservasPorFecha[fecha] ?? { total: 0, pendientes: 0 };
+            const { total: cantidadReservas, pendientes } = resumenFecha;
             const esHoy = fecha === fechaComoClave(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
 
             return (
@@ -185,8 +170,9 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
                   fechaSeleccionada === fecha ? 'is-selected' : '',
                   esHoy ? 'is-today' : '',
                   cantidadReservas > 0 ? 'has-reservations' : '',
+                  pendientes > 0 ? 'has-pending-reservations' : '',
                 ].filter(Boolean).join(' ')}
-                aria-label={`${fecha}${cantidadReservas ? `, ${cantidadReservas} reservas` : ', sin reservas'}`}
+                aria-label={`${fecha}${cantidadReservas ? `, ${cantidadReservas} reservas${pendientes ? `, ${pendientes} pendiente${pendientes === 1 ? '' : 's'}` : ''}` : ', sin reservas'}`}
                 aria-pressed={fechaSeleccionada === fecha}
                 onClick={() => {
                   setFechaSeleccionada(fecha);
@@ -195,6 +181,17 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
               >
                 <span>{dia}</span>
                 {cantidadReservas > 0 && <span className="admin-reservations-calendar-count">{cantidadReservas}</span>}
+                {pendientes > 0 && (
+                  <span
+                    aria-label={`${pendientes} ${pendientes === 1 ? 'solicitud pendiente' : 'solicitudes pendientes'}`}
+                    className="admin-reservations-calendar-pending app-tooltip-container"
+                  >
+                    <span aria-hidden="true">!</span>
+                    <span className="app-tooltip" role="tooltip">
+                      {pendientes} {pendientes === 1 ? 'solicitud pendiente' : 'solicitudes pendientes'}
+                    </span>
+                  </span>
+                )}
               </button>
             );
           })}
@@ -313,14 +310,12 @@ export default function ReservasList({ reservas, onReservaActualizada, agregarNo
           return (
             <div className="admin-reservation-card" key={reserva.id}>
               <div className="admin-reservation-heading">
-                <div>
+                <div className="admin-reservation-title">
                   <h3 className="admin-reservation-court-name text-2xl font-bold text-gray-800 mb-1">
                     {reserva.cancha?.nombre ?? 'Reserva'}
                   </h3>
                 </div>
-                <span className={`admin-reservation-status rounded-full font-bold ${getEstadoColor(reserva.estado)}`}>
-                  {getEstadoEmoji(reserva.estado)} {reserva.estado}
-                </span>
+                <EstadoReservaIcono estado={reserva.estado} />
               </div>
 
               <div className="admin-reservation-details">

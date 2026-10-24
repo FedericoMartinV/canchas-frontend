@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { MapPin, DollarSign, Trash2, Users, Pencil, AlertTriangle } from 'lucide-react';
 import { canchasAPI } from '../../services/api';
+import CanchaTipoIcono from '../shared/CanchaTipoIcono';
 
 export default function CanchasList({ canchas, onCanchaEliminada, onCanchaEditar, agregarNotificacion }) {
   const [canchaAEliminar, setCanchaAEliminar] = useState(null);
@@ -36,7 +37,7 @@ export default function CanchasList({ canchas, onCanchaEliminada, onCanchaEditar
   return (
     <div className="admin-court-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {canchas.map(cancha => (
-        <div key={cancha.id} className="card-cancha admin-court-card group">
+        <div key={cancha.id} className="admin-court-card">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="text-2xl font-bold text-gray-800 mb-1">{cancha.nombre}</h3>
@@ -45,9 +46,7 @@ export default function CanchasList({ canchas, onCanchaEliminada, onCanchaEditar
                 {cancha.ubicacion}
               </p>
             </div>
-            <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-bold">
-              {cancha.tipo}
-            </span>
+            <CanchaTipoIcono tipo={cancha.tipo} />
           </div>
 
           <div className="space-y-3 mb-6">
